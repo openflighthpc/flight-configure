@@ -29,7 +29,7 @@ module FlightConfigure
   module Commands
     class Avail < Command
       def run
-        puts fetch_applications
+        puts Dir.glob(Application.build('*').schema_path)
       end
     end
   end

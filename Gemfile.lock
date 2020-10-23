@@ -9,6 +9,7 @@ GEM
       slop (~> 4.8)
     highline (2.0.3)
     method_source (1.0.0)
+    mrdialog (1.0.3)
     output_mode (1.1.1)
       pastel (>= 0.7)
       tty-color (>= 0.5)
@@ -36,17 +37,16 @@ GEM
       tty-screen (~> 0.8)
     unicode-display_width (1.7.0)
     unicode_utils (1.4.0)
-    xdg (3.1.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   commander-openflighthpc
+  mrdialog
   output_mode
   pry
   pry-byebug
-  xdg
 
 BUNDLED WITH
    2.1.4

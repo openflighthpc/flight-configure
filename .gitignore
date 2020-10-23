@@ -3,4 +3,4 @@ tmp
 .bundle
 vendor
 var
-etc/overriddes.conf
+etc/overrides.conf

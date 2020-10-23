@@ -25,36 +25,16 @@
 # https://github.com/openflighthpc/flight-configure
 #==============================================================================
 
-require 'ostruct'
-
-require_relative 'application'
-
 module FlightConfigure
-  class Command
-    attr_accessor :args, :options
-
-    def initialize(*args, **opts)
-      @args = args.freeze
-      @options = OpenStruct.new(opts)
-    end
-
-    def run!
-      Config::CACHE.logger.info "Running: #{self.class}"
-      run
-      Config::CACHE.logger.info 'Exited: 0'
-    rescue => e
-      if e.respond_to? :exit_code
-        Config::CACHE.logger.fatal "Exited: #{e.exit_code}"
-      else
-        Config::CACHE.logger.fatal 'Exited non-zero'
+  module Commands
+    class Run < Command
+      def run
+        puts application.dialog.request
       end
-      Config::CACHE.logger.debug e.backtrace.reverse.join("\n")
-      Config::CACHE.logger.error "(#{e.class}) #{e.message}"
-      raise e
-    end
 
-    def run
-      raise NotImplementedError
+      def application
+        @application ||= Application.load(args.first)
+      end
     end
   end
 end

@@ -62,6 +62,12 @@ module FlightConfigure
       c.summary = 'List of configurable applications'
     end
 
+    create_command 'run', 'APPLICATION' do |c|
+      c.summary = 'Run the configuration for an application'
+    end
+
+    default_command 'run'
+
     if Config::CACHE.development
       create_command 'console' do |c|
         c.action do

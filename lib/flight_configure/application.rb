@@ -25,36 +25,45 @@
 # https://github.com/openflighthpc/flight-configure
 #==============================================================================
 
-require 'ostruct'
-
-require_relative 'application'
+require 'yaml'
+require_relative 'dialog'
 
 module FlightConfigure
-  class Command
-    attr_accessor :args, :options
-
-    def initialize(*args, **opts)
-      @args = args.freeze
-      @options = OpenStruct.new(opts)
+  Application = Struct.new(:name, :schema_path) do
+    def self.build(name)
+      path = File.join(Config::CACHE.applications_path, name, 'configuration.yml')
+      new(name, path)
     end
 
-    def run!
-      Config::CACHE.logger.info "Running: #{self.class}"
-      run
-      Config::CACHE.logger.info 'Exited: 0'
-    rescue => e
-      if e.respond_to? :exit_code
-        Config::CACHE.logger.fatal "Exited: #{e.exit_code}"
-      else
-        Config::CACHE.logger.fatal 'Exited non-zero'
+    def self.load(name)
+      build(name).tap do |app|
+        next if File.exists? app.schema_path
+        raise MissingError, <<~ERROR
+          Could not locate configurable application: #{name}
+        ERROR
       end
-      Config::CACHE.logger.debug e.backtrace.reverse.join("\n")
-      Config::CACHE.logger.error "(#{e.class}) #{e.message}"
-      raise e
     end
 
-    def run
-      raise NotImplementedError
+    def schema
+      @schema ||= YAML.load File.read(schema_path)
+    end
+
+    def dialog
+      @dialog ||= begin
+        cfg = schema
+        values = {}.tap do |h|
+          cfg['values'].each do |vh|
+            h[vh['key']] = vh['value'].to_s
+          end
+        end
+        Dialog.create(values) do
+          title cfg['title']
+          text cfg['text']
+          cfg['values'].each do |h|
+            value h['label'], h['key'], h['length']
+          end
+        end
+      end
     end
   end
 end

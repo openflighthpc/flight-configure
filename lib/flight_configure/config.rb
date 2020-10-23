@@ -47,17 +47,12 @@ module FlightConfigure
     attr_reader :_program_description
     attr_reader :_program_version
 
+    attr_reader :dialog_config
     attr_reader :applications_path
     attr_reader :log_path
 
     attr_reader :log_level
     attr_reader :development
-
-    private
-
-    def xdg
-      @xdg ||= XDG::Environment.new
-    end
   end
 
   class Config

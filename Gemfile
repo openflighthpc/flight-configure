@@ -28,8 +28,8 @@
 source 'https://rubygems.org'
 
 gem 'commander-openflighthpc'
-gem 'xdg'
 gem 'output_mode'
+gem 'mrdialog'
 
 group :development do
   gem 'pry'
