@@ -48,6 +48,19 @@ module FlightConfigure
       @schema ||= YAML.load File.read(schema_path)
     end
 
+    def save
+      File.write schema_path, YAML.dump(schema)
+    end
+
+    def dialog_update
+      dialog.request
+      data = dialog.data
+      schema['values'].each do |value|
+        key = value['key']
+        value['value'] = data[key]
+      end
+    end
+
     def dialog
       @dialog ||= begin
         cfg = schema

@@ -29,7 +29,8 @@ module FlightConfigure
   module Commands
     class Run < Command
       def run
-        puts application.dialog.request
+        application.dialog_update
+        application.save
       end
 
       def application
