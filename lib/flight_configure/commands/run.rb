@@ -30,7 +30,14 @@ module FlightConfigure
     class Run < Command
       def run
         application.dialog_update
-        application.save
+        if opts.force || application.changed?
+          application.save
+        else
+          raise UnchangedError, <<~ERROR.chomp
+            The configuration has not changed. Skipping the post configure script.
+            The script can be ran using the following flag: #{Paint["--force", :yellow]}
+          ERROR
+        end
       end
 
       def application

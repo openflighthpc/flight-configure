@@ -48,6 +48,8 @@ module FlightConfigure
   GeneralError = Error.define_class(2)
   InputError = GeneralError.define_class(3)
 
+  UnchangedError = GeneralError.define_class(4)
+
   class InteractiveOnly < InputError
     MSG = 'This command requires an interactive terminal'
 

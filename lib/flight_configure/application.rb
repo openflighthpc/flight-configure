@@ -27,9 +27,13 @@
 
 require 'yaml'
 require_relative 'dialog'
+require 'forwardable'
 
 module FlightConfigure
   Application = Struct.new(:name, :schema_path) do
+    extend Forwardable
+    def_delegators :dialog, :changed?
+
     def self.build(name)
       path = File.join(Config::CACHE.applications_path, name, 'configuration.yml')
       new(name, path)

@@ -31,11 +31,11 @@ require_relative 'application'
 
 module FlightConfigure
   class Command
-    attr_accessor :args, :options
+    attr_accessor :args, :opts
 
     def initialize(*args, **opts)
       @args = args.freeze
-      @options = OpenStruct.new(opts)
+      @opts = OpenStruct.new(opts)
     end
 
     def run!
