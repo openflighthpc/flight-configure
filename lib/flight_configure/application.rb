@@ -81,11 +81,11 @@ module FlightConfigure
                          '--noprofile',
                          '--norc',
                          '-x',
-                         application.script_path,
-                         *application.build_script_args,
+                         script_path,
+                         *build_script_args,
                          unsetenv_others: true,
                          close_others: true,
-                         [:out, :err] => application.log_fd)
+                         [:out, :err] => log_fd)
       Process.wait pid
     end
 
