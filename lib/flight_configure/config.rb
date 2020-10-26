@@ -49,7 +49,9 @@ module FlightConfigure
     attr_reader :dialog_config
     attr_reader :applications_path
     attr_reader :data_path
-    attr_reader :log_path
+    attr_reader :log_dir
+
+    attr_reader :script_env
 
     attr_reader :log_level
     attr_reader :development
@@ -67,8 +69,14 @@ module FlightConfigure
     end
 
     def log_path
-      @data.log_path.tap do |path|
-        FileUtils.mkdir_p(File.dirname(path)) if path.is_a? String
+      @log_path ||= begin
+        case @data.log_dir
+        when String
+          FileUtils.mkdir_p @data.log_dir
+          File.join(@data.log_dir, 'application.log')
+        else
+          @data.log_dir
+        end
       end
     end
 

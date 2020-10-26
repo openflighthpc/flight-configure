@@ -48,10 +48,6 @@ module FlightConfigure
       end
     end
 
-    def script_path?
-      File.exists? script_path
-    end
-
     def script_path
       @script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
     end
@@ -66,6 +62,31 @@ module FlightConfigure
 
     def current_data
       @current_data ||= (YAML.load(File.read(data_path)) || {})
+    end
+
+    # TODO: Should this execute via a bash process? Currently not all the
+    # configuration scripts have executable permissions, hence the bash
+    # shell. As this is a rebuild, should we break from this mechanism?
+    # TBC
+    #
+    # NOTE: As this goes through a bash shell, there is the possibility
+    # of a shell injection form the config options. However their actions
+    # will be limited to the caller's permissions.
+    #
+    # Consider refactoring
+    def run_script
+      return unless File.exists? script_path
+      pid = Kernel.spawn(Config::CACHE.script_env,
+                         '/bin/bash',
+                         '--noprofile',
+                         '--norc',
+                         '-x',
+                         application.script_path,
+                         *application.build_script_args,
+                         unsetenv_others: true,
+                         close_others: true,
+                         [:out, :err] => application.log_fd)
+      Process.wait pid
     end
 
     def save
@@ -87,6 +108,20 @@ module FlightConfigure
 
     private
 
+    ##
+    # Designed to work when logging is redirected to $stderr or
+    # a file given by a string
+    def log_fd
+      @application_log_fd = case Config::CACHE.log_dir
+      when IO
+        Config::CACHE.log_dir.fileno
+      else
+        base_dir = File.join(Config::CACHE.log_dir, 'applications')
+        FileUtils.mkdir_p base_dir
+        [File.join(base_dir, name + '.log'), 'w']
+      end
+    end
+
     def build_values
       schema["values"].each_with_object({}) do |value_hash, memo|
         key = value_hash["key"]
@@ -97,7 +132,7 @@ module FlightConfigure
     def dialog
       @dialog ||= begin
         cfg = schema
-        values = build__values
+        values = build_values
         Dialog.create(values) do
           title cfg['title']
           text cfg['text']
