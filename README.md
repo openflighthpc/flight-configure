@@ -1,22 +1,49 @@
 # Flight Configure
 
-%SUMMARY%
+Application configuration tool
 
 ## Overview
 
-What is it?
+A tool for configuring applications within the flight ecosystem.
+
+Each application plugins in its configuration definition and post configure
+script. Then `flight configure` does the rest!
 
 ## Installation
 
-How is it installed?
+With a suitable version of ruby:
+
+```
+$ bundle install
+```
 
 ## Configuration
 
-Any required or optional configuration?
+[See configuration document](etc/00-defaults.conf)
 
 ## Operation
 
-How do you use it?
+To list available applications
+
+```
+bin/configure avail
+```
+
+To configure an application
+
+```
+bin/configure run <app-name>
+
+# Or
+
+bin/configure <app-name>
+```
+
+To get a single configuration value
+
+```
+bin/configure get <app-name> <key>
+```
 
 # Contributing
 
