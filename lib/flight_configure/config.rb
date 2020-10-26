@@ -27,10 +27,10 @@
 
 require 'logger'
 require 'forwardable'
+require 'xdg'
 
 module FlightConfigure
-  DEFAULTS_PATH   ||= File.expand_path('../../etc/defaults.conf', __dir__)
-  OVERRIDES_PATH  ||= File.expand_path('../../etc/overrides.conf', __dir__)
+  ETC_CONFS = Dir.glob(File.expand_path('../../etc/*\.conf', __dir__)).sort
 
   class ConfigData
     def self.load_data(*paths)
@@ -53,6 +53,12 @@ module FlightConfigure
 
     attr_reader :log_level
     attr_reader :development
+
+    private
+
+    def xdg
+      @xdg ||= XDG::Environment.new
+    end
   end
 
   class Config
@@ -97,9 +103,9 @@ module FlightConfigure
 
     # Forward undefined properties to the data
     extend Forwardable
-    def_delegators :@data, *(ConfigData.instance_methods - self.instance_methods)
+    def_delegators :@data, *(ConfigData.public_instance_methods - self.instance_methods)
   end
 
   # Caches the default config
-  Config::CACHE = Config.new(DEFAULTS_PATH, OVERRIDES_PATH)
+  Config::CACHE = Config.new(*ETC_CONFS)
 end

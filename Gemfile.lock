@@ -37,6 +37,7 @@ GEM
       tty-screen (~> 0.8)
     unicode-display_width (1.7.0)
     unicode_utils (1.4.0)
+    xdg (4.3.0)
 
 PLATFORMS
   ruby
@@ -47,6 +48,7 @@ DEPENDENCIES
   output_mode
   pry
   pry-byebug
+  xdg
 
 BUNDLED WITH
    2.1.4
