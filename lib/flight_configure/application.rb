@@ -48,6 +48,20 @@ module FlightConfigure
       end
     end
 
+    def script_path?
+      File.exists? script_path
+    end
+
+    def script_path
+      @script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
+    end
+
+    def build_script_args
+      schema['values'].map do |h|
+        "#{h['key']}=#{h["value"]}"
+      end
+    end
+
     def schema
       @schema ||= YAML.load File.read(schema_path)
     end

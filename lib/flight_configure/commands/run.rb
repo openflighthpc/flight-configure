@@ -32,6 +32,7 @@ module FlightConfigure
         application.dialog_update
         if opts.force || application.changed?
           application.save
+          run_script if application.script_path?
         else
           raise UnchangedError, <<~ERROR.chomp
             The configuration has not changed. Skipping the post configure script.
@@ -42,6 +43,14 @@ module FlightConfigure
 
       def application
         @application ||= Application.load(args.first)
+      end
+
+      def run_script
+        pid = Kernel.spawn(application.script_path,
+                           *application.build_script_args,
+                           unset_others: true,
+                           close_others: true)
+        Process.wait pid
       end
     end
   end
