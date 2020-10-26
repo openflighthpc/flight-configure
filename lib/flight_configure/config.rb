@@ -36,7 +36,6 @@ module FlightConfigure
     def self.load_data(*paths)
       new.tap do |data|
         paths.each do |path|
-          next unless File.exists? path
           data.instance_eval(File.read(path), path)
         end
       end
@@ -49,6 +48,7 @@ module FlightConfigure
 
     attr_reader :dialog_config
     attr_reader :applications_path
+    attr_reader :data_path
     attr_reader :log_path
 
     attr_reader :log_level

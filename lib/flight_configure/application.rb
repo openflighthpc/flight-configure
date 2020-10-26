@@ -56,37 +56,48 @@ module FlightConfigure
       @script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
     end
 
-    def build_script_args
-      schema['values'].map do |h|
-        "#{h['key']}=#{h["value"]}"
-      end
+    def data_path
+      @data_path ||= File.join(Config::CACHE.data_path, name + '.yml')
     end
 
     def schema
       @schema ||= YAML.load File.read(schema_path)
     end
 
+    def current_data
+      @current_data ||= (YAML.load(File.read(data_path)) || {})
+    end
+
     def save
-      File.write schema_path, YAML.dump(schema)
+      File.write data_path, YAML.dump(current_data)
+    end
+
+    def build_script_args
+      build_values.map do |key, value|
+        "#{key}=#{value}"
+      end
     end
 
     def dialog_update
       dialog.request
-      data = dialog.data
-      schema['values'].each do |value|
-        key = value['key']
-        value['value'] = data[key]
+      dialog.data.each do |key, value|
+        current_data[key] = value
+      end
+    end
+
+    private
+
+    def build_values
+      schema["values"].each_with_object({}) do |value_hash, memo|
+        key = value_hash["key"]
+        memo[key] = current_data[key] || value_hash['value']
       end
     end
 
     def dialog
       @dialog ||= begin
         cfg = schema
-        values = {}.tap do |h|
-          cfg['values'].each do |vh|
-            h[vh['key']] = vh['value'].to_s
-          end
-        end
+        values = build__values
         Dialog.create(values) do
           title cfg['title']
           text cfg['text']

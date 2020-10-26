@@ -46,9 +46,10 @@ module FlightConfigure
       end
 
       def run_script
-        pid = Kernel.spawn(application.script_path,
+        pid = Kernel.spawn('bash',
+                           application.script_path,
                            *application.build_script_args,
-                           unset_others: true,
+                           unsetenv_others: true,
                            close_others: true)
         Process.wait pid
       end
