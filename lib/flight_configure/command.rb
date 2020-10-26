@@ -26,6 +26,7 @@
 #==============================================================================
 
 require 'ostruct'
+require 'output_mode'
 
 require_relative 'application'
 

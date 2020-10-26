@@ -27,18 +27,43 @@
 
 module FlightConfigure
   module Commands
-    class Avail < Command
-      extend OutputMode::TLDR::Index
+    class Show < Command
+      # Wraps output mode to allow for variable length attribute fields
+      # There are two output definitions:
+      # 1. The core definitions on the class
+      # 2. The variable config definitions on the instance
+      OutputWrapper = Struct.new(:application) do
+        extend  OutputMode::TLDR::Show
+        include OutputMode::TLDR::Show
 
-      register_column(header: 'Name') { |a| a.name }
-      register_column(header: 'Summary') { |a| a.schema['title'] }
-      register_column(header: 'Configured') { |a| File.exists? a.data_path }
+        register_attribute(header: 'Name') { |a| a.name }
+        register_attribute(header: 'Summary') { |a| a.schema['title'] }
+        register_attribute(header: 'Description') { |a| a.schema['text'] }
+
+        def initialize(*_)
+          super
+          # TODO: Change label into a description field
+          application.schema['values'].each do |value|
+            register_attribute(header: value['key']) { value['label'] }
+          end
+        end
+
+        def print
+          puts self.class.build_output.render(application)
+          if $stdout.tty?
+            puts
+            puts Paint["Configuration Attributes:", :blue, :bold]
+          end
+          puts build_output.render(application)
+        end
+      end
 
       def run
-        apps = Dir.glob(Application.build('*').schema_path).map do |path|
-          Application.build_from_schema_path(path)
-        end.to_a
-        puts self.class.build_output.render(*apps)
+        OutputWrapper.new(application).print
+      end
+
+      def application
+        @application ||= Application.load(args.first)
       end
     end
   end
