@@ -34,6 +34,18 @@ module FlightConfigure
     extend Forwardable
     def_delegators :dialog, :changed?
 
+    def self.build_from_schema_path(path)
+      regex = /\A#{Regexp.escape Config::CACHE.applications_path}\/(?<name>[^\/]+)\/configuration\.yml\Z/
+      if match = regex.match(path)
+        name = match.named_captures['name']
+        new(name, path)
+      else
+        raise InputError, <<~ERROR
+          Could not resolve application from path: #{path}
+        ERROR
+      end
+    end
+
     def self.build(name)
       path = File.join(Config::CACHE.applications_path, name, 'configuration.yml')
       new(name, path)

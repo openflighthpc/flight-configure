@@ -25,11 +25,22 @@
 # https://github.com/openflighthpc/flight-configure
 #==============================================================================
 
+require 'output_mode'
+
 module FlightConfigure
   module Commands
     class Avail < Command
+      extend OutputMode::TLDR::Index
+
+      register_column(header: 'Name') { |a| a.name }
+      register_column(header: 'Summary') { |a| a.schema['title'] }
+      register_column(header: 'Configured') { |a| File.exists? a.data_path }
+
       def run
-        puts Dir.glob(Application.build('*').schema_path)
+        apps = Dir.glob(Application.build('*').schema_path).map do |path|
+          Application.build_from_schema_path(path)
+        end.to_a
+        puts self.class.build_output.render(*apps)
       end
     end
   end
