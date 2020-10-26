@@ -73,7 +73,11 @@ module FlightConfigure
     end
 
     def current_data
-      @current_data ||= (YAML.load(File.read(data_path)) || {})
+      @current_data ||= if File.exists?(data_path)
+        YAML.load(File.read(data_path)) || {}
+      else
+        {}
+      end
     end
 
     # TODO: Should this execute via a bash process? Currently not all the
