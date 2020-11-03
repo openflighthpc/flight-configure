@@ -113,7 +113,7 @@ module FlightConfigure
           data.label = v[:label]
           data.ly = (i += 1)
           data.lx = 1
-          data.item = send(v[:prop])
+          data.item = send(v[:prop]).to_s
           data.iy = i
           data.ix = label_length + 2
           data.flen = v[:length] || data.item.length + default_input_length
