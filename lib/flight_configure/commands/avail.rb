@@ -34,15 +34,16 @@ module FlightConfigure
       register_column(header: 'Summary', row_color: :green) { |a| a.schema['title'] }
       register_column(header: 'Configured') { |a| File.exists? a.data_path }
 
-      def self.build_output
-        super(header_color: :clear, row_color: :clear)
+      def self.build_output(ascii: false)
+        opts = ascii ? { ascii: true, interactive: true } : {}
+        super(header_color: :clear, row_color: :clear, **opts)
       end
 
       def run
         apps = Dir.glob(Application.build('*').schema_path).map do |path|
           Application.build_from_schema_path(path)
         end.to_a
-        puts self.class.build_output.render(*apps)
+        puts self.class.build_output(ascii: opts.ascii).render(*apps)
       end
     end
   end
