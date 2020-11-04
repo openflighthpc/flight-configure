@@ -28,7 +28,7 @@
 source 'https://rubygems.org'
 
 gem 'commander-openflighthpc'
-gem 'output_mode'
+gem 'output_mode', '> 1.2'
 gem 'mrdialog'
 gem 'xdg'
 

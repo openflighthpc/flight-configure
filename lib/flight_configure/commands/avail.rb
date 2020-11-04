@@ -30,9 +30,13 @@ module FlightConfigure
     class Avail < Command
       extend OutputMode::TLDR::Index
 
-      register_column(header: 'Name') { |a| a.name }
-      register_column(header: 'Summary') { |a| a.schema['title'] }
+      register_column(header: 'Name', row_color: :cyan) { |a| a.name }
+      register_column(header: 'Summary', row_color: :green) { |a| a.schema['title'] }
       register_column(header: 'Configured') { |a| File.exists? a.data_path }
+
+      def self.build_output
+        super(header_color: :clear, row_color: :clear)
+      end
 
       def run
         apps = Dir.glob(Application.build('*').schema_path).map do |path|
