@@ -59,16 +59,16 @@ module FlightConfigure
     end
 
     create_command 'avail' do |c|
-      c.summary = 'List of configurable applications'
+      c.summary = 'List all configurable applications.'
     end
 
     create_command 'get', 'APPLICATION KEY' do |c|
-      c.summary = 'Retrieve a configuration values for an application'
+      c.summary = 'Retrieve a configuration value for an application'
     end
 
     create_command 'run', 'APPLICATION' do |c|
       c.summary = 'Run the configuration for an application'
-      c.slop.bool '--force', 'Execute the post configure script when the config has not changed'
+      c.slop.bool '--force', 'Execute the post configure script even when the config has not changed'
     end
 
     create_command 'show', 'APPLICATION' do |c|
