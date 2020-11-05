@@ -60,8 +60,8 @@ module FlightConfigure
       end
     end
 
-    def script_path
-      @script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
+    def legacy_script_path
+      @legacy_script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
     end
 
     def data_path
@@ -91,13 +91,13 @@ module FlightConfigure
     #
     # Consider refactoring
     def run_script
-      return unless File.exists? script_path
+      return unless File.exists? legacy_script_path
       pid = Kernel.spawn(Config::CACHE.script_env,
                          '/bin/bash',
                          '--noprofile',
                          '--norc',
                          '-x',
-                         script_path,
+                         legacy_script_path,
                          *build_script_args,
                          unsetenv_others: true,
                          close_others: true,
