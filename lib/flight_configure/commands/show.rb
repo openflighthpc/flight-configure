@@ -28,38 +28,53 @@
 module FlightConfigure
   module Commands
     class Show < Command
-      # Wraps output mode to allow for variable length attribute fields
-      # There are two output definitions:
-      # 1. The core definitions on the class
-      # 2. The variable config definitions on the instance
-      OutputWrapper = Struct.new(:application) do
-        extend  OutputMode::TLDR::Show
+      class ShowOutput
         include OutputMode::TLDR::Show
+        TEMPLATE = <<~ERB
+          <% each(:shared) do |value, field:, padding:, **_| -%>
+          <%= padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
+          <% end -%>
 
-        register_attribute(header: 'Name') { |a| a.name }
-        register_attribute(header: 'Summary') { |a| a.schema['title'] }
-        register_attribute(header: 'Description') { |a| a.schema['text'] }
+          <%= pastel.cyan.bold '== Configuration Attribute Definitions ==' %>
+          <% each(:value) do |value, field:, padding:, **_| -%>
+          <%= padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
+          <% end -%>
+        ERB
 
-        def initialize(*_)
-          super
-          # TODO: Change label into a description field
+        attr_reader :application
+
+        def initialize(application)
+          @application = application
+
+          register_attribute(section: :shared, header: 'Name') do |a|
+            a.name
+          end
+          register_attribute(section: :shared, header: 'Summary') do |a|
+            a.schema['title']
+          end
+          register_attribute(section: :shared, header: 'Description') do |a|
+            a.schema['text']
+          end
+
           application.schema['values'].each do |value|
-            register_attribute(header: value['key']) { value['label'] }
+            register_attribute(section: :value, header: value['key']) do
+              value['label']
+            end
           end
         end
 
-        def print
-          puts self.class.build_output.render(application)
-          if $stdout.tty?
-            puts
-            puts Paint["Configuration Attributes:", :blue, :bold]
-          end
-          puts build_output.render(application)
+        def render(ascii: nil, **other)
+          opts = ascii ? other.merge(ascii: true, interactive: true) : other.dup
+          build_output(**opts).render(application)
+        end
+
+        def build_output(**opts)
+          super(template: TEMPLATE, **opts)
         end
       end
 
       def run
-        OutputWrapper.new(application).print
+        puts ShowOutput.new(application).render(ascii: opts.ascii)
       end
 
       def application
