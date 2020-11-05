@@ -76,12 +76,19 @@ module FlightConfigure
       @schema ||= YAML.load File.read(schema_path)
     end
 
+    # Stores the current state of the data file to be saved
     def current_data
       @current_data ||= if File.exists?(data_path)
         YAML.load(File.read(data_path)) || {}
       else
         {}
       end
+    end
+
+    # Merges the defaults in with the current_data
+    # NOTE: This method is READ ONLY as it can not be reliable updated
+    def merged_data
+      @merged_data ||= build_values.freeze
     end
 
     def assert_script_permissions
@@ -169,6 +176,13 @@ module FlightConfigure
 
     private
 
+    def build_values
+      schema["values"].each_with_object({}) do |value_hash, memo|
+        key = value_hash["key"]
+        memo[key] = current_data[key] || value_hash['value']
+      end
+    end
+
     ##
     # Designed to work when logging is redirected to $stderr or
     # a file given by a string
@@ -180,13 +194,6 @@ module FlightConfigure
         base_dir = File.join(Config::CACHE.log_dir, 'applications')
         FileUtils.mkdir_p base_dir
         [File.join(base_dir, name + '.log'), 'w']
-      end
-    end
-
-    def build_values
-      schema["values"].each_with_object({}) do |value_hash, memo|
-        key = value_hash["key"]
-        memo[key] = current_data[key] || value_hash['value']
       end
     end
 

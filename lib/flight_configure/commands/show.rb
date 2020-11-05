@@ -65,7 +65,12 @@ module FlightConfigure
 
           application.schema['values'].each do |value|
             register_attribute(section: :value, header: value['key']) do
-              application.current_data[value['key']]
+              # NOTE: The initial default values can be of any type YAML supports,
+              #       However the dialog only supports strings. This causes some
+              #       weird handling of true/false depending on the type
+              #
+              #       For consistency, all values are type-casted to strings
+              application.merged_data[value['key']].to_s
             end
           end
         end

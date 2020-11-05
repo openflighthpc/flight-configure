@@ -29,8 +29,8 @@ module FlightConfigure
   module Commands
     class Get < Command
       def run
-        if application.current_data.key?(key)
-          puts application.current_data[key]
+        if application.merged_data.key?(key)
+          puts application.merged_data[key]
         else
           raise InputError, <<~ERROR.chomp
             The '#{application.name}' does not have a configuration key: #{key}
