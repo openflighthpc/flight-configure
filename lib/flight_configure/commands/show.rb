@@ -37,6 +37,9 @@ module FlightConfigure
           <%=   padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
           <%  end -%>
 
+          <%= pastel.cyan.bold '== Description ==' %>
+          <%= pastel.green model.schema['text'].chomp %>
+
           <%= pastel.cyan.bold '== Configuration Attributes ==' %>
           <%  each(:value) do |datum, field:, padding:, **_| -%>
           <%    label = model.schema['values'].select { |v| v['key'] == field }.first["label"] -%>
@@ -53,10 +56,8 @@ module FlightConfigure
             a.name
           end
           register_attribute(section: :shared, header: 'Summary') do |a|
-            a.schema['title']
-          end
-          register_attribute(section: :shared, header: 'Description') do |a|
-            a.schema['text']
+            # Replace newlines to ensure the output does not break
+            a.schema['title'].gsub("\n", ' ')
           end
           register_attribute(section: :shared, verbose: true, header: 'Configuration Keys') do |a|
             a.schema['values'].map { |v| v['key'] }.join(' ')
