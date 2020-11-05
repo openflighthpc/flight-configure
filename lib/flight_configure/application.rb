@@ -60,6 +60,10 @@ module FlightConfigure
       end
     end
 
+    def script_path
+      @script_path ||= File.join(File.dirname(schema_path), 'configure')
+    end
+
     def legacy_script_path
       @legacy_script_path ||= File.join(File.dirname(schema_path), 'configure.sh')
     end
@@ -80,29 +84,63 @@ module FlightConfigure
       end
     end
 
-    # TODO: Should this execute via a bash process? Currently not all the
-    # configuration scripts have executable permissions, hence the bash
-    # shell. As this is a rebuild, should we break from this mechanism?
-    # TBC
-    #
-    # NOTE: As this goes through a bash shell, there is the possibility
-    # of a shell injection form the config options. However their actions
-    # will be limited to the caller's permissions.
-    #
-    # Consider refactoring
     def run_script
+      if File.executable?(script_path)
+        if File.exists(legacy_script_path)
+          msg = <<~WARN.chomp
+            Detected both the new style and legacy configuration scripts!
+            The following legacy script will be ignored:
+          WARN
+          $stderr.puts Paint[msg, :red]
+          $stderr.puts Paint[legacy_script_path, :yellow]
+          Config::CACHE.logger.warn "#{msg}\n#{legacy_script_path}"
+        end
+
+        pid = Kernel.spawn(Config::CACHE.script_env,
+                           script_path,
+                           *build_script_args,
+                           unsetenv_others: true,
+                           close_others: true,
+                           [:out, :err] => log_fd)
+        Process.wait pid
+
+      elsif File.exists?(script_path)
+        # This error condition should have been detected earlier in the
+        # command. If this condition is reached, then there is no
+        # reasonable way to continue
+        raise InternalError, <<~ERROR.chomp
+          An unexpected error has occurred!
+          Permissions Error: #{script_path}
+        ERROR
+
+      elsif File.exists?(legacy_script_path)
+        # NOTE: The legacy scripts represent a security risk as they
+        #       are executed through a bash shell. This issue
+        #       pre-dates this utility and can not be completely
+        #       removed ATM
+        #
+        #       It is mitigated by unix permissions, externally
+        #       to this app. Consider permanent removal
+        msg = "Falling back on the legacy configuration script."
+        $stderr.puts msg
+        Config::CACHE.logger.warn msg
+
+        pid = Kernel.spawn(Config::CACHE.script_env,
+                           '/bin/bash',
+                           '--noprofile',
+                           '--norc',
+                           '-x',
+                           legacy_script_path,
+                           *build_script_args,
+                           unsetenv_others: true,
+                           close_others: true,
+                           [:out, :err] => log_fd)
+        Process.wait pid
+      end
+
+
+
       return unless File.exists? legacy_script_path
-      pid = Kernel.spawn(Config::CACHE.script_env,
-                         '/bin/bash',
-                         '--noprofile',
-                         '--norc',
-                         '-x',
-                         legacy_script_path,
-                         *build_script_args,
-                         unsetenv_others: true,
-                         close_others: true,
-                         [:out, :err] => log_fd)
-      Process.wait pid
     end
 
     def save
