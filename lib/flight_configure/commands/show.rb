@@ -33,15 +33,15 @@ module FlightConfigure
 
         # TODO: Replace the label tag with a description
         TEMPLATE = <<~'ERB'
-          <% each(:shared) do |value, field:, padding:, **_| -%>
-          <%= padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
-          <% end -%>
+          <%  each(:shared) do |value, field:, padding:, **_| -%>
+          <%=   padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
+          <%  end -%>
 
           <%= pastel.cyan.bold '== Configuration Attributes ==' %>
-          <% each(:value) do |datum, field:, padding:, **_| -%>
-          <%   label = model.schema['values'].select { |v| v['key'] == field }.first["label"] -%>
-          <%=  padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(datum) -%> <%= pastel.dim("# #{label}") %>
-          <% end -%>
+          <%  each(:value) do |datum, field:, padding:, **_| -%>
+          <%    label = model.schema['values'].select { |v| v['key'] == field }.first["label"] -%>
+          <%=   padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(datum) -%> <%= pastel.dim("# #{label}") %>
+          <%  end -%>
         ERB
 
         attr_reader :application
@@ -57,6 +57,9 @@ module FlightConfigure
           end
           register_attribute(section: :shared, header: 'Description') do |a|
             a.schema['text']
+          end
+          register_attribute(section: :shared, verbose: true, header: 'Configuration Keys') do |a|
+            a.schema['values'].map { |v| v['key'] }.join(' ')
           end
 
           application.schema['values'].each do |value|
@@ -77,7 +80,7 @@ module FlightConfigure
       end
 
       def run
-        puts ShowOutput.new(application).render(ascii: opts.ascii)
+        puts ShowOutput.new(application).render(ascii: opts.ascii, verbose: opts.verbose)
       end
 
       def application

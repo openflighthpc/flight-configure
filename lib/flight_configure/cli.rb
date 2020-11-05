@@ -59,6 +59,7 @@ module FlightConfigure
     end
 
     global_slop.bool '--ascii', 'Display the uncolorized ASCII output'
+    global_slop.bool '--verbose', 'Display greater details in the output'
 
     create_command 'avail' do |c|
       c.summary = 'List all configurable applications.'
