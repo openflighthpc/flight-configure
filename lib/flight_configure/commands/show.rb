@@ -70,8 +70,12 @@ module FlightConfigure
           end
         end
 
-        def render(ascii: nil, **other)
-          opts = ascii ? other.merge(ascii: true, interactive: true) : other.dup
+        def render(ascii: nil, verbose: nil)
+          opts = {}.tap do |o|
+            o[:verbose]     = true  if verbose
+            o[:ascii]       = true  if ascii
+            o[:interactive] = true  if ascii
+          end
           build_output(**opts).render(application)
         end
 
