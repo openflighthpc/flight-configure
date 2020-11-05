@@ -30,14 +30,17 @@ module FlightConfigure
     class Show < Command
       class ShowOutput
         include OutputMode::TLDR::Show
-        TEMPLATE = <<~ERB
+
+        # TODO: Replace the label tag with a description
+        TEMPLATE = <<~'ERB'
           <% each(:shared) do |value, field:, padding:, **_| -%>
           <%= padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
           <% end -%>
 
-          <%= pastel.cyan.bold '== Configuration Attribute Definitions ==' %>
-          <% each(:value) do |value, field:, padding:, **_| -%>
-          <%= padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(value) %>
+          <%= pastel.cyan.bold '== Configuration Attributes ==' %>
+          <% each(:value) do |datum, field:, padding:, **_| -%>
+          <%   label = model.schema['values'].select { |v| v['key'] == field }.first["label"] -%>
+          <%=  padding -%><%= pastel.blue.bold(field) -%>: <%= pastel.green(datum) -%> <%= pastel.dim("# #{label}") %>
           <% end -%>
         ERB
 
@@ -58,7 +61,7 @@ module FlightConfigure
 
           application.schema['values'].each do |value|
             register_attribute(section: :value, header: value['key']) do
-              value['label']
+              application.current_data[value['key']]
             end
           end
         end
