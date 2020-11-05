@@ -29,6 +29,7 @@ module FlightConfigure
   module Commands
     class Run < Command
       def run
+        application.assert_script_permissions
         application.dialog_update
         if opts.force || application.changed?
           application.save

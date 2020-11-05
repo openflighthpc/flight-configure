@@ -84,9 +84,18 @@ module FlightConfigure
       end
     end
 
+    def assert_script_permissions
+      if File.exists?(script_path) && !File.executable?(script_path)
+        raise PermissionsError, <<~ERROR.chomp
+          You do not have permission to execute the configuration script:
+          #{Paint[script_path, :yellow]}
+        ERROR
+      end
+    end
+
     def run_script
       if File.executable?(script_path)
-        if File.exists(legacy_script_path)
+        if File.exists?(legacy_script_path)
           msg = <<~WARN.chomp
             Detected both the new style and legacy configuration scripts!
             The following legacy script will be ignored:
@@ -122,7 +131,7 @@ module FlightConfigure
         #       It is mitigated by unix permissions, externally
         #       to this app. Consider permanent removal
         msg = "Falling back on the legacy configuration script."
-        $stderr.puts msg
+        $stderr.puts Paint[msg, :red]
         Config::CACHE.logger.warn msg
 
         pid = Kernel.spawn(Config::CACHE.script_env,
