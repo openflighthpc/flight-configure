@@ -147,8 +147,6 @@ module FlightConfigure
         Process.wait pid
       end
 
-
-
       return unless File.exists? legacy_script_path
     end
 
